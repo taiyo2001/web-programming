@@ -10,8 +10,6 @@
 <body>
     @if (Route::has('login'))
             @auth
-                {{-- <a href="{{ url('/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Dashboard</a> --}}
-                {{-- <a href="{{ route('logout') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Log out</a> --}}
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
@@ -23,20 +21,28 @@
                 </form>
             @else
                 <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Log in</a>
-
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">Register</a>
-                @endif
             @endauth
         </div>
     @endif
     <h1>家族の家計簿管理アプリ</h1>
+    @if(!is_null(\Illuminate\Support\Facades\Auth::user()))
     <p>ログイン中のユーザーネーム - {{ Auth::user()->name }}</p>
+    @else
+    <p>ログインしていません</p>
+    @endif
+    @if(!is_null(\Illuminate\Support\Facades\Auth::user()) && \Illuminate\Support\Facades\Auth::user()->authority === 1)
+    <form action="{{ route('user.show') }}" method="POST">
+        <button>ユーザーを管理する</button>
+    </form>
+    @else
+    <p>ユーザー管理の権限はありません</p>
+    @endif
     <div>
         <p>投稿フォーム</p>
         @if (session('feedback.success'))
             <p style="color: green">{{ session('feedback.success') }}</p>
         @endif
+        @if(!is_null(\Illuminate\Support\Facades\Auth::user()))
         <form action="{{ route('management.create') }}" method="post">
             @csrf
             <table>
@@ -71,15 +77,21 @@
             </table>
             <button type="submit">投稿</button>
         </form>
+        @else
+        <p>投稿権限がありません</p>
+        @endif
     </div>
+    <p>ただ今の合計使用金額 ー {{ $total }}円 ー</p>
+    <h2>購入品一覧</h2>
     <div>
     @foreach($managements as $management)
-        <div>
+        <div style="border: 1px solid black; text-align: center;">
             <p>購入品：{{ $management->purchase }}</p>
             <p>購入日：{{ $management->date }}</p>
             <p>金額：{{ $management->amount_money }}</p>
             <p>メモ：{{ $management->memo }}</p>
             <p>購入者：{{ $management->user->name }}</p>
+            @if(!is_null(\Illuminate\Support\Facades\Auth::user()) && \Illuminate\Support\Facades\Auth::id() === $management->user_id)
             <div>
                 <a href="{{ route('management.update.index', ['managementId' => $management->id]) }}">編集</a>
                 <form action="{{ route('management.delete', ['managementId' => $management->id]) }}" method="post">
@@ -88,6 +100,9 @@
                     <button type="submit">削除</button>
                 </form>
             </div>
+            @else
+                編集権がありません
+            @endif
         </div>
     @endforeach
     </div>
