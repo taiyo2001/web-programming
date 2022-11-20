@@ -1,0 +1,5 @@
+name,email,authority,password,remember_token
+father,father@gmail.com,1,father0000,
+mother,mother@gmail.com,1,mother0000,
+brother,brother@gmail.com,0,brother0000,
+sister,sister@gmail.com,0,sister0000,
